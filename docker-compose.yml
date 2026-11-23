@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: preparcial_db
+    environment:
+      POSTGRES_USER: preparcial
+      POSTGRES_PASSWORD: preparcial123
+      POSTGRES_DB: preparcial_db
+    # 5436 para no chocar con otros Postgres locales.
+    ports:
+      - "5436:5432"
+    volumes:
+      - preparcial_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U preparcial -d preparcial_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  preparcial_data:
