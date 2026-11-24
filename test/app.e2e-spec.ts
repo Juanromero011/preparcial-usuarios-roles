@@ -227,4 +227,73 @@ describe('API usuarios y roles (e2e)', () => {
       expect(res.body.message).toBe('No autorizado');
     });
   });
+
+  describe('DELETE /roles/:id y /users/:id', () => {
+    const NO_EXISTE = '00000000-0000-0000-0000-000000000000';
+
+    it('DELETE /roles/:id 200 borra un rol sin usuarios', async () => {
+      const created = await asAdmin(http.post('/roles').send({ role_name: `borrar-${run}` })).expect(201);
+      const res = await asAdmin(http.delete(`/roles/${created.body.roleId}`)).expect(200);
+      expect(res.body).toEqual({ message: 'Rol eliminado' });
+      const list = await asAdmin(http.get('/roles'));
+      expect(list.body.map((r: { role_name: string }) => r.role_name)).not.toContain(`borrar-${run}`);
+    });
+
+    it('DELETE /roles/:id 409 si el rol está asignado a usuarios', async () => {
+      const list = await asAdmin(http.get('/roles'));
+      const role = list.body.find((r: { role_name: string }) => r.role_name === roleName);
+      const res = await asAdmin(http.delete(`/roles/${role.id}`));
+      expect(res.status).toBe(409);
+      expect(res.body.message).toBe('El rol está asignado a usuarios');
+    });
+
+    it('DELETE /roles/:id 400 no se puede borrar el rol admin', async () => {
+      const list = await asAdmin(http.get('/roles'));
+      const admin = list.body.find((r: { role_name: string }) => r.role_name === 'admin');
+      const res = await asAdmin(http.delete(`/roles/${admin.id}`));
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('No se puede eliminar el rol admin');
+    });
+
+    it('DELETE /roles/:id 404 Rol no encontrado', async () => {
+      for (const id of [NO_EXISTE, 'no-es-uuid']) {
+        const res = await asAdmin(http.delete(`/roles/${id}`));
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('Rol no encontrado');
+      }
+    });
+
+    it('DELETE /roles/:id 403 para un usuario sin rol admin', async () => {
+      const res = await asUser(http.delete(`/roles/${NO_EXISTE}`));
+      expect(res.status).toBe(403);
+    });
+
+    it('DELETE /users/:id 200 borra el usuario y ya no puede entrar', async () => {
+      const email = `borrar-${run}@test.com`;
+      const reg = await http.post('/auth/register').send({ email, password: 'Password1', name: 'Borrar' }).expect(201);
+      const res = await asAdmin(http.delete(`/users/${reg.body.userId}`)).expect(200);
+      expect(res.body).toEqual({ message: 'Usuario eliminado' });
+      await http.post('/auth/login').send({ email, password: 'Password1' }).expect(401);
+    });
+
+    it('DELETE /users/:id 400 el admin no puede borrarse a sí mismo', async () => {
+      const me = await asAdmin(http.get('/users/me'));
+      const res = await asAdmin(http.delete(`/users/${me.body.id}`));
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('No puedes eliminar tu propio usuario');
+    });
+
+    it('DELETE /users/:id 404 Usuario no encontrado', async () => {
+      for (const id of [NO_EXISTE, 'no-es-uuid']) {
+        const res = await asAdmin(http.delete(`/users/${id}`));
+        expect(res.status).toBe(404);
+        expect(res.body.message).toBe('Usuario no encontrado');
+      }
+    });
+
+    it('DELETE /users/:id 403 para un usuario sin rol admin', async () => {
+      const res = await asUser(http.delete(`/users/${NO_EXISTE}`));
+      expect(res.status).toBe(403);
+    });
+  });
 });

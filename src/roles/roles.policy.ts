@@ -23,4 +23,9 @@ export class RolesPolicy implements PolicyBefore<User, Ability<RolesPolicy>> {
   list(_user: User | null): boolean {
     return false;
   }
+
+  /** DELETE /roles/:id: solo admin. */
+  remove(_user: User | null): boolean {
+    return false;
+  }
 }

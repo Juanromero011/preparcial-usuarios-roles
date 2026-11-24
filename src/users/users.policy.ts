@@ -23,4 +23,9 @@ export class UsersPolicy implements PolicyBefore<User, Ability<UsersPolicy>> {
   assignRoles(_user: User | null): boolean {
     return false;
   }
+
+  /** DELETE /users/:id: solo admin. */
+  remove(_user: User | null): boolean {
+    return false;
+  }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -47,5 +48,11 @@ export class UsersController {
   @Can(UsersPolicy, 'assignRoles')
   assignRoles(@Param('id', UserIdPipe) id: string, @Body() dto: AssignRolesDto) {
     return this.users.assignRoles(id, dto.roles);
+  }
+
+  @Delete(':id')
+  @Can(UsersPolicy, 'remove')
+  remove(@Param('id', UserIdPipe) id: string, @CurrentUser() user: User) {
+    return this.users.remove(id, user.id);
   }
 }
