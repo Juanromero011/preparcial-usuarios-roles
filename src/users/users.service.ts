@@ -87,6 +87,14 @@ export class UsersService {
     }
   }
 
+  /** Un admin no puede borrarse a sí mismo (se quedaría sin acceso). Sus roles se borran en cascada. */
+  async remove(id: string, currentUserId: string) {
+    if (id === currentUserId) throw new BadRequestException('No puedes eliminar tu propio usuario');
+    if (!(await this.users.existsBy({ id }))) throw new NotFoundException('Usuario no encontrado');
+    await this.users.delete(id);
+    return { message: 'Usuario eliminado' };
+  }
+
   /** Reemplaza los roles del usuario por los de la lista (todos deben existir). */
   async assignRoles(id: string, names: string[]) {
     const user = await this.findByIdWithRoles(id);

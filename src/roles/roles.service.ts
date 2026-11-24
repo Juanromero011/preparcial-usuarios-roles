@@ -1,9 +1,15 @@
-import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { isUniqueViolation } from '../common/db-errors.js';
 import type { CreateRoleDto } from './dto/create-role.dto.js';
-import { Role } from './role.entity.js';
+import { ADMIN_ROLE, Role } from './role.entity.js';
 
 @Injectable()
 export class RolesService {
@@ -32,6 +38,16 @@ export class RolesService {
     } catch {
       throw new InternalServerErrorException('Error al obtener roles');
     }
+  }
+
+  /** El admin no se puede borrar (quedaría la API sin administrador); uno asignado tampoco. */
+  async remove(id: string) {
+    const role = await this.roles.findOne({ where: { id }, relations: { users: true } });
+    if (!role) throw new NotFoundException('Rol no encontrado');
+    if (role.role_name === ADMIN_ROLE) throw new BadRequestException('No se puede eliminar el rol admin');
+    if (role.users.length > 0) throw new ConflictException('El rol está asignado a usuarios');
+    await this.roles.delete(id);
+    return { message: 'Rol eliminado' };
   }
 
   /** Los roles con esos nombres. Puede devolver menos si alguno no existe. */
