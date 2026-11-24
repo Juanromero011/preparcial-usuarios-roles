@@ -7,6 +7,9 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ADMIN_ROLE, Role } from '../roles/role.entity.js';
+import { Reservation } from '../reservations/entities/reservation.entity.js';
+import { ParkingSpot } from '../parking-spots/entities/parking-spot.entity.js';
+import { OneToMany } from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -43,6 +46,12 @@ export class User {
     synchronize: false,
   })
   roles: Role[];
+  @OneToMany(() => Reservation, (reservation) => reservation.user)
+  reservations: Reservation[];
+
+  @OneToMany(() => ParkingSpot, (parking_spot) => parking_spot.supervisor)
+  parking_spots: ParkingSpot[];
+
 }
 
 /** Nombres de los roles del usuario, p. ej. ['admin', 'supervisor']. */
@@ -58,3 +67,6 @@ export const hasRole = (user: User | null, ...roles: string[]): boolean =>
   user !== null && roleNames(user).some((name) => roles.includes(name));
 
 export const isAdmin = (user: User | null): boolean => hasRole(user, ADMIN_ROLE);
+
+
+
