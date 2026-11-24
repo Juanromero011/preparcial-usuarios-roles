@@ -17,7 +17,7 @@ docker compose up -d              # Postgres en localhost:5436 + pgweb en http:/
 npm run start:dev                 # API en http://localhost:3000
 ```
 
-La documentación interactiva (Swagger) queda en http://localhost:3000/api. Para las rutas con candado, haz login y pega el `accessToken` en **Authorize**. Los comandos útiles están en [COMANDOS.md](COMANDOS.md).
+La documentación interactiva (Swagger) queda en http://localhost:3000/api. Para las rutas con candado, haz login y pega el `accessToken` en **Authorize**.
 
 Al arrancar, la API corre las migraciones pendientes (`migrationsRun: true`). Esas migraciones crean las tablas, el rol `admin` y el usuario admin.
 
@@ -56,9 +56,11 @@ Para las rutas protegidas se envía el header `Authorization: Bearer <accessToke
 | `POST /auth/logout` | público | 204 | 400 refreshToken es requerido |
 | `POST /roles` | admin | 201 `{ message, roleId }` | 400 role_name es requerido · 401 · 403 · 409 role_name ya existe |
 | `GET /roles` | admin | 200 `[{ id, role_name, description }]` | 401 · 403 · 500 |
+| `DELETE /roles/:id` | admin | 200 `{ message: "Rol eliminado" }` | 400 no se puede eliminar el rol admin · 401 · 403 · 404 Rol no encontrado · 409 el rol está asignado a usuarios |
 | `PATCH /users/:id/roles` | admin | 200 `{ message: "Roles asignados" }` | 400 roles inválidos · 401 · 403 · 404 Usuario no encontrado |
 | `GET /users/me` | autenticado | 200 `{ id, email, name, phone, roles }` | 401 · 404 |
 | `GET /users` | admin | 200 `[{ id, email, name, roles }]` | 401 · 403 · 500 |
+| `DELETE /users/:id` | admin | 200 `{ message: "Usuario eliminado" }` | 400 no puedes eliminar tu propio usuario · 401 · 403 · 404 Usuario no encontrado |
 
 El 401 responde "Token inválido o faltante" y el 403 responde "No autorizado".
 
@@ -117,7 +119,7 @@ Ejemplo: "un supervisor puede listar usuarios".
    ```
 3. **Para una entidad nueva**, sigue estos pasos:
    - Crea la entidad en `src/<modulo>/`.
-   - Agrégala a `entities` en `src/config/typeorm.config.ts` y genera la migración con `npm run migration:generate -- CreateAlgo` (ver [COMANDOS.md](COMANDOS.md)).
+   - Agrégala a `entities` en `src/config/typeorm.config.ts` y genera la migración con `npm run migration:generate -- CreateAlgo`.
    - Crea el DTO, el service y el controller con `@UseFilters(AuthErrorsFilter)`.
    - Crea la policy con `@Policy()` y `before()` para el admin.
    - Registra la policy en los `providers` del módulo e importa el módulo en `AppModule`.
@@ -142,6 +144,6 @@ test/            pruebas e2e contra Postgres
 | Script | Qué hace |
 |---|---|
 | `npm run start:dev` | API con recarga automática |
-| `npm run test:e2e` | 24 pruebas e2e contra el Postgres de Docker |
+| `npm run test:e2e` | 33 pruebas e2e contra el Postgres de Docker |
 | `npm run lint` | oxlint |
 | `npm run build && npm run migration:run` | Corre las migraciones a mano (`migration:revert` revierte la última) |
