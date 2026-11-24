@@ -38,6 +38,9 @@ export class User {
     name: 'user_roles',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },
     inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+    // user_roles la crea a mano la migración 1764000000000 (nombres de FK e índice propios).
+    // Sin esto, cada `migration:generate` intentaría rehacer esta tabla.
+    synchronize: false,
   })
   roles: Role[];
 }
