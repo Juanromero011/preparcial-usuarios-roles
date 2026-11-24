@@ -21,9 +21,11 @@
     "migration:run": "nest build && node --env-file=.env node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js",
     "migration:revert": "nest build && node --env-file=.env node_modules/typeorm/cli.js migration:revert -d dist/database/data-source.js",
     "migration:generate": "node scripts/migration-generate.mjs",
+    "migration:snapshot": "node --env-file=.env scripts/migration-snapshot.mjs",
     "db:reset": "docker compose down -v && docker compose up -d --wait && npm run migration:run && npm run db:seed",
     "db:seed": "docker compose exec -T db psql -q -U preparcial -d preparcial_db -v ON_ERROR_STOP=1 < sql/03_usuarios_y_roles_de_prueba.sql",
     "db:psql": "docker compose exec db psql -U preparcial -d preparcial_db",
+    "db:backup": "mkdir -p sql/backups && f=sql/backups/backup-$(date +%Y%m%d-%H%M).sql && docker compose exec -T db pg_dump -U preparcial -d preparcial_db --no-owner > $f && echo \"✓ Backup: $f\"",
     "role": "node --env-file=.env scripts/dev.mjs role",
     "user": "node --env-file=.env scripts/dev.mjs user",
     "token": "node --env-file=.env scripts/dev.mjs token"
