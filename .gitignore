@@ -58,3 +58,6 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+
+# Apuntes personales (no se suben)
+COMANDOS.md
