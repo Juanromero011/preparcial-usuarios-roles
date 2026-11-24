@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { CurrentUser } from '@nestjs/authentication';
 import { Can } from '@nestjs/authorization';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthErrorsFilter } from '../common/auth-errors.filter.js';
 import { AssignRolesDto } from './dto/assign-roles.dto.js';
 import type { User } from './user.entity.js';
@@ -21,6 +22,8 @@ const UserIdPipe = new ParseUUIDPipe({
   exceptionFactory: () => new NotFoundException('Usuario no encontrado'),
 });
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 @UseFilters(AuthErrorsFilter)
 export class UsersController {

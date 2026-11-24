@@ -6,7 +6,7 @@ import { isAdmin, type User } from './user.entity.js';
  * before() deja pasar al admin; las reglas deciden para los demás.
  *
  * Para una regla nueva (p. ej. que un supervisor liste usuarios):
- *   list(user: User | null) { return user !== null && roleNames(user).includes('supervisor'); }
+ *   list(user: User | null) { return hasRole(user, 'supervisor'); }
  */
 @Policy()
 export class UsersPolicy implements PolicyBefore<User, Ability<UsersPolicy>> {

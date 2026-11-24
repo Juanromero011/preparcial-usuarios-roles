@@ -48,5 +48,13 @@ export class User {
 /** Nombres de los roles del usuario, p. ej. ['admin', 'supervisor']. */
 export const roleNames = (user: User): string[] => (user.roles ?? []).map((r) => r.role_name);
 
-export const isAdmin = (user: User | null): boolean =>
-  user !== null && roleNames(user).includes(ADMIN_ROLE);
+/**
+ * ¿El usuario tiene AL MENOS UNO de esos roles? Para las reglas de las policies:
+ *   create(user: User | null) { return hasRole(user, 'supervisor'); }
+ *   update(user: User | null) { return hasRole(user, 'supervisor', 'operador'); }
+ * Sin usuario (null) siempre es false.
+ */
+export const hasRole = (user: User | null, ...roles: string[]): boolean =>
+  user !== null && roleNames(user).some((name) => roles.includes(name));
+
+export const isAdmin = (user: User | null): boolean => hasRole(user, ADMIN_ROLE);

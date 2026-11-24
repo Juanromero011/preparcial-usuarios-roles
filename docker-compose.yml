@@ -17,5 +17,17 @@ services:
       timeout: 5s
       retries: 10
 
+  # Ver la base desde el navegador: http://localhost:8081 (tablas, datos, consultas SQL).
+  pgweb:
+    image: sosedoff/pgweb:0.16.2
+    container_name: preparcial_pgweb
+    environment:
+      PGWEB_DATABASE_URL: postgres://preparcial:preparcial123@db:5432/preparcial_db?sslmode=disable
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   preparcial_data:

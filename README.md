@@ -13,9 +13,11 @@ Requisitos: Node 22+ y Docker.
 ```bash
 npm install
 cp .env.example .env              # y cambia JWT_SECRET: openssl rand -base64 48
-docker compose up -d              # Postgres en localhost:5436
+docker compose up -d              # Postgres en localhost:5436 + pgweb en http://localhost:8081
 npm run start:dev                 # API en http://localhost:3000
 ```
+
+La documentación interactiva (Swagger) queda en http://localhost:3000/api. Para las rutas con candado, haz login y pega el `accessToken` en **Authorize**. Los comandos útiles están en [COMANDOS.md](COMANDOS.md).
 
 Al arrancar, la API corre las migraciones pendientes (`migrationsRun: true`). Esas migraciones crean las tablas, el rol `admin` y el usuario admin.
 
@@ -103,10 +105,10 @@ Petición ──► AuthenticationGuard ──► AuthorizationGuard ──► V
 
 Ejemplo: "un supervisor puede listar usuarios".
 
-1. **Regla en la policy** (`src/users/users.policy.ts`). El parámetro del usuario debe aceptar `null`:
+1. **Regla en la policy** (`src/users/users.policy.ts`). El parámetro del usuario debe aceptar `null`. `hasRole` (de `user.entity.ts`) dice si tiene al menos uno de esos roles; el admin ya pasa por `before()`:
    ```ts
    list(user: User | null): boolean {
-     return user !== null && roleNames(user).includes('supervisor');
+     return hasRole(user, 'supervisor');            // o hasRole(user, 'supervisor', 'operador')
    }
    ```
 2. **Ruta** en el controlador con `@Can(UsersPolicy, 'list')`. Si la ruta recibe un id, la regla puede tomarlo:
@@ -115,7 +117,7 @@ Ejemplo: "un supervisor puede listar usuarios".
    ```
 3. **Para una entidad nueva**, sigue estos pasos:
    - Crea la entidad en `src/<modulo>/`.
-   - Crea la migración en `src/database/migrations/` y regístrala en `src/config/typeorm.config.ts`.
+   - Agrégala a `entities` en `src/config/typeorm.config.ts` y genera la migración con `npm run migration:generate -- CreateAlgo` (ver [COMANDOS.md](COMANDOS.md)).
    - Crea el DTO, el service y el controller con `@UseFilters(AuthErrorsFilter)`.
    - Crea la policy con `@Policy()` y `before()` para el admin.
    - Registra la policy en los `providers` del módulo e importa el módulo en `AppModule`.
