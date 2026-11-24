@@ -10,11 +10,19 @@
     "start:dev": "nest start --watch",
     "start:prod": "node --env-file=.env dist/main",
     "lint": "oxlint --type-aware src/ test/",
+    "lint:fix": "oxlint --type-aware --fix src/ test/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "vitest run",
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
-    "migration:run": "node --env-file=.env node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js",
-    "migration:revert": "node --env-file=.env node_modules/typeorm/cli.js migration:revert -d dist/database/data-source.js"
+    "migration:run": "nest build && node --env-file=.env node_modules/typeorm/cli.js migration:run -d dist/database/data-source.js",
+    "migration:revert": "nest build && node --env-file=.env node_modules/typeorm/cli.js migration:revert -d dist/database/data-source.js",
+    "migration:generate": "node scripts/migration-generate.mjs",
+    "db:reset": "docker compose down -v && docker compose up -d --wait && npm run migration:run && npm run db:seed",
+    "db:seed": "docker compose exec -T db psql -q -U preparcial -d preparcial_db -v ON_ERROR_STOP=1 < sql/03_usuarios_y_roles_de_prueba.sql",
+    "db:psql": "docker compose exec db psql -U preparcial -d preparcial_db",
+    "role": "node --env-file=.env scripts/dev.mjs role",
+    "user": "node --env-file=.env scripts/dev.mjs user",
+    "token": "node --env-file=.env scripts/dev.mjs token"
   },
   "dependencies": {
     "@nestjs/authentication": "^0.1.7",
